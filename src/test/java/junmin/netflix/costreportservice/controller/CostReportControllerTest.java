@@ -2,6 +2,7 @@ package junmin.netflix.costreportservice.controller;
 
 import com.google.gson.Gson;
 import junmin.netflix.costreportservice.exception.ErrorEnum;
+import junmin.netflix.costreportservice.exception.InvalidProductionException;
 import junmin.netflix.costreportservice.exception.InvalidReportException;
 import junmin.netflix.costreportservice.pojo.EPCostRecord;
 import junmin.netflix.costreportservice.service.EPCostReportService;
@@ -57,7 +58,7 @@ class CostReportControllerTest {
 	}
 
 	@Test
-	void postEPCostReport_withNoProdName_thenThrowInvalidRequestError() throws Exception {
+	void postEPCostReport_withNoProdName_thenReturnRequestError() throws Exception {
 		when(mockService.processEPCostReport(any(), anyList())).thenThrow(createInvalidReportException());
 		RequestBuilder request = MockMvcRequestBuilders
 				.post("/api/report/production/MaryAndMartin/ep")
@@ -68,15 +69,10 @@ class CostReportControllerTest {
 		assertTrue(resp.getStatus()==400);
 	}
 
-	private InvalidReportException createInvalidReportException(){
-		return new InvalidReportException(
-				ErrorEnum.PRODUCTION_NAME_IS_EMPTY.getId(), "production name in request URL path cannot be empty");
-	}
 	@Test
 	public void getProdCostReportByProdNameAndEP() throws Exception {
 		String epCode = "101";
 		String production = "MaryAndMartin";
-		double amount = 2050.00;
 		when(mockService.getCostReportByProdNameAndEpCode(production, epCode)).thenReturn(getEPCostRecord());
 		RequestBuilder request = MockMvcRequestBuilders
 				.get("/api/report/production/"+production)
@@ -86,6 +82,19 @@ class CostReportControllerTest {
 		MockHttpServletResponse resp = mvc.perform(request).andReturn().getResponse();
 		assertTrue(resp.getStatus()==200);
 		assertTrue(resp.getContentAsString().equalsIgnoreCase(expectPostEPCostReport()));
+	}
+
+	@Test
+	public void getProdCostReportByInvalidProdName_ThenReturnResourceNotFound() throws Exception {
+		String production = "TomAndJerry";
+		when(mockService.getCostReportByProdNameAndEpCode(production, "")).thenThrow(createInvalidProductionException());
+		RequestBuilder request = MockMvcRequestBuilders
+				.get("/api/report/production/"+production)
+				.param("epCode", "")
+				.contentType(MediaType.APPLICATION_JSON)
+				.accept(MediaType.APPLICATION_JSON);
+		MockHttpServletResponse resp = mvc.perform(request).andReturn().getResponse();
+		assertTrue(resp.getStatus()==404);
 	}
 
 	@Test
@@ -190,4 +199,13 @@ class CostReportControllerTest {
 		));
 	}
 
+	private InvalidReportException createInvalidReportException(){
+		return new InvalidReportException(
+				ErrorEnum.PRODUCTION_NAME_IS_EMPTY.getId(), "production name in request URL path cannot be empty");
+	}
+
+	private InvalidProductionException createInvalidProductionException() {
+		return new InvalidProductionException(
+				ErrorEnum.PRODUCTION_NOT_EXIST.getId(), "TomAndJerry does not exist");
+	}
 }
