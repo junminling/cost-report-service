@@ -1,6 +1,8 @@
 package junmin.netflix.costreportservice.controller;
 
 import com.google.gson.Gson;
+import junmin.netflix.costreportservice.exception.ErrorEnum;
+import junmin.netflix.costreportservice.exception.InvalidReportException;
 import junmin.netflix.costreportservice.pojo.EPCostRecord;
 import junmin.netflix.costreportservice.service.EPCostReportService;
 import org.junit.jupiter.api.BeforeAll;
@@ -17,6 +19,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.RequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 
@@ -53,6 +56,22 @@ class CostReportControllerTest {
 		assertTrue(resp.getContentAsString().equalsIgnoreCase(expectPostEPCostReport()));
 	}
 
+	@Test
+	void postEPCostReport_withNoProdName_thenThrowInvalidRequestError() throws Exception {
+		when(mockService.processEPCostReport(any(), anyList())).thenThrow(createInvalidReportException());
+		RequestBuilder request = MockMvcRequestBuilders
+				.post("/api/report/production/MaryAndMartin/ep")
+				.contentType(MediaType.APPLICATION_JSON)
+				.accept(MediaType.APPLICATION_JSON)
+				.content(sampleMMEPCostInput());
+		MockHttpServletResponse resp = mvc.perform(request).andReturn().getResponse();
+		assertTrue(resp.getStatus()==400);
+	}
+
+	private InvalidReportException createInvalidReportException(){
+		return new InvalidReportException(
+				ErrorEnum.PRODUCTION_NAME_IS_EMPTY.getId(), "production name in request URL path cannot be empty");
+	}
 	@Test
 	public void getProdCostReportByProdNameAndEP() throws Exception {
 		String epCode = "101";
@@ -98,10 +117,7 @@ class CostReportControllerTest {
 		System.out.println(expectAmortizedPostProdCostReport());
 		assertTrue(resp.getContentAsString().equalsIgnoreCase(expectAmortizedPostProdCostReport()));
 	}
-
-
-
-
+	
 	private String sampleMMEPCostInput() {
 		return "[{\"amount\":200.00,\"episodeCode\":\"101\"},{\"amount\":300.00,\"episodeCode\":\"101\"},{\"amount\":150.00,\"episodeCode\":\"101\"},{\"amount\":75.00,\"episodeCode\":\"101\"},{\"amount\":1325.00,\"episodeCode\":\"101\"}]";
 	}
@@ -115,66 +131,62 @@ class CostReportControllerTest {
 	}
 
 	private String expectMMEPTotalCostReport(){
-		return "[{\"episodeCode\":\"101\",\"amount\":2050.0}]";
+		return "[{\"episodeCode\":\"101\",\"amount\":2050.00}]";
 	}
 
 	private String expectBBTotalCostReport(){
-		return "[{\"episodeCode\":\"101\",\"amount\":500.0},{\"episodeCode\":\"102\",\"amount\":225.0},{\"episodeCode\":\"103\",\"amount\":1325.0},{\"episodeCode\":\"104\",\"amount\":613.0},{\"episodeCode\":\"105\",\"amount\":1254.0}]";
+		return "[{\"episodeCode\":\"101\",\"amount\":500.00},{\"episodeCode\":\"102\",\"amount\":225.00},{\"episodeCode\":\"103\",\"amount\":1325.00},{\"episodeCode\":\"104\",\"amount\":613.00},{\"episodeCode\":\"105\",\"amount\":1254.00}]";
 	}
 
 	private String expectBBAmortizedTotalCostReport(){
-		return "[{\"episodeCode\":\"101\",\"amount\":810.0},{\"episodeCode\":\"102\",\"amount\":535.0},{\"episodeCode\":\"103\",\"amount\":1635.0},{\"episodeCode\":\"104\",\"amount\":923.0},{\"episodeCode\":\"105\",\"amount\":1564.0}]";
+		return "[{\"episodeCode\":\"101\",\"amount\":810.00},{\"episodeCode\":\"102\",\"amount\":535.00},{\"episodeCode\":\"103\",\"amount\":1635.00},{\"episodeCode\":\"104\",\"amount\":923.00},{\"episodeCode\":\"105\",\"amount\":1564.00}]";
 	}
 
 	private List<EPCostRecord> getEPCostRecord(){
-		return Arrays.asList(new EPCostRecord("101", 2050.00));
+		return Arrays.asList(new EPCostRecord("101", new BigDecimal(2050.00)));
 	}
 
 	private List<EPCostRecord> getBBTotalCostEntities(){
-		long timestamp = System.currentTimeMillis();
 		return Arrays.asList(
-				new EPCostRecord("101", 500.00),
-				new EPCostRecord("102", 225.00),
-				new EPCostRecord("103", 1325.00),
-				new EPCostRecord("104", 613.00),
-				new EPCostRecord("105", 1254.00)
+				new EPCostRecord("101", new BigDecimal(500.00)),
+				new EPCostRecord("102", new BigDecimal(225.00)),
+				new EPCostRecord("103", new BigDecimal(1325.00)),
+				new EPCostRecord("104", new BigDecimal(613.00)),
+				new EPCostRecord("105", new BigDecimal(1254.00))
 		);
 	}
 
 	private List<EPCostRecord> getBBAmortizedTotalCostEntities(){
-		long timestamp = System.currentTimeMillis();
 		return Arrays.asList(
-				new EPCostRecord("101", 810.00),
-				new EPCostRecord("102", 535.00),
-				new EPCostRecord("103", 1635.00),
-				new EPCostRecord("104", 923.00),
-				new EPCostRecord("105", 1564.00)
+				new EPCostRecord("101", new BigDecimal(810.00)),
+				new EPCostRecord("102", new BigDecimal(535.00)),
+				new EPCostRecord("103", new BigDecimal(1635.00)),
+				new EPCostRecord("104", new BigDecimal(923.00)),
+				new EPCostRecord("105", new BigDecimal(1564.00))
 		);
 	}
 
 	private String expectPostEPCostReport(){
-		return gson.toJson(Arrays.asList(new EPCostRecord("101", 2050.0)));
+		return gson.toJson(Arrays.asList(new EPCostRecord("101", new BigDecimal(2050.00))));
 	}
 
 	private String expectPostProdCostReport(){
-		long timestamp = System.currentTimeMillis();
 		return gson.toJson(Arrays.asList(
-				new EPCostRecord("101", 500.0),
-				new EPCostRecord("102", 225.0),
-				new EPCostRecord("103", 1325.0),
-				new EPCostRecord("104", 613.0),
-				new EPCostRecord("105", 1254.0)
+				new EPCostRecord("101", new BigDecimal(500.00)),
+				new EPCostRecord("102", new BigDecimal(225.00)),
+				new EPCostRecord("103", new BigDecimal(1325.00)),
+				new EPCostRecord("104", new BigDecimal(613.00)),
+				new EPCostRecord("105", new BigDecimal(1254.00))
 		));
 	}
 
 	private String expectAmortizedPostProdCostReport(){
-		long timestamp = System.currentTimeMillis();
 		return gson.toJson(Arrays.asList(
-				new EPCostRecord("101", 810.0),
-				new EPCostRecord("102", 535.0),
-				new EPCostRecord("103", 1635.0),
-				new EPCostRecord("104", 923.0),
-				new EPCostRecord("105", 1564.0)
+				new EPCostRecord("101", new BigDecimal(810.00)),
+				new EPCostRecord("102", new BigDecimal(535.00)),
+				new EPCostRecord("103", new BigDecimal(1635.00)),
+				new EPCostRecord("104", new BigDecimal(923.00)),
+				new EPCostRecord("105", new BigDecimal(1564.00))
 		));
 	}
 

@@ -3,6 +3,7 @@ package junmin.netflix.costreportservice.model;
 import io.swagger.annotations.ApiModelProperty;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 
 @Entity
 @Table(name="EP_TOTAL_COST",uniqueConstraints={@UniqueConstraint(columnNames = {"prodName", "epCode", "timestamp"})})
@@ -15,16 +16,16 @@ public class EPTotalCostEntity {
 
 	String epCode;
 
-	double itemizedTotalCost;
+	BigDecimal itemizedTotalCost;
 
-	double amortizedCost;
+	BigDecimal amortizedCost;
 
-	double totalCost;
+	BigDecimal totalCost;
 
 	long timestamp;
 
 	public EPTotalCostEntity(){};
-	public EPTotalCostEntity(String prodName, String epCode, double itemizedTotalCost, double amortizedCost, double totalCost, long timestamp) {
+	public EPTotalCostEntity(String prodName, String epCode, BigDecimal itemizedTotalCost, BigDecimal amortizedCost, BigDecimal totalCost, long timestamp) {
 		this.prodName = prodName;
 		this.epCode = epCode;
 		this.itemizedTotalCost = itemizedTotalCost;
@@ -49,27 +50,27 @@ public class EPTotalCostEntity {
 		this.epCode = epCode;
 	}
 
-	public double getItemizedTotalCost() {
+	public BigDecimal getItemizedTotalCost() {
 		return itemizedTotalCost;
 	}
 
-	public void setItemizedTotalCost(double itemizedTotalCost) {
+	public void setItemizedTotalCost(BigDecimal itemizedTotalCost) {
 		this.itemizedTotalCost = itemizedTotalCost;
 	}
 
-	public double getAmortizedCost() {
+	public BigDecimal getAmortizedCost() {
 		return amortizedCost;
 	}
 
-	public void setAmortizedCost(double amortizedCost) {
+	public void setAmortizedCost(BigDecimal amortizedCost) {
 		this.amortizedCost = amortizedCost;
 	}
 
-	public double getTotalCost() {
+	public BigDecimal getTotalCost() {
 		return totalCost;
 	}
 
-	public void setTotalCost(double totalCost) {
+	public void setTotalCost(BigDecimal totalCost) {
 		this.totalCost = totalCost;
 	}
 

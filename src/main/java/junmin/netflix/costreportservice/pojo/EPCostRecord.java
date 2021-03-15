@@ -4,24 +4,25 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 @ApiModel(description = "Episode Total Cost Model")
 public class EPCostRecord implements Serializable {
 	@ApiModelProperty(notes = "Episode code")
 	String episodeCode;
 	@ApiModelProperty(notes = "Episode itemized cost")
-	double amount;
+	BigDecimal amount;
 
-	public EPCostRecord(String episodeCode, double amount) {
+	public EPCostRecord(String episodeCode, BigDecimal amount) {
 		this.episodeCode = episodeCode;
 		this.amount = amount;
 	}
 
-	public double getAmount() {
+	public BigDecimal getAmount() {
 		return amount;
 	}
 
-	public void setAmount(double amount) {
+	public void setAmount(BigDecimal amount) {
 		this.amount = amount;
 	}
 

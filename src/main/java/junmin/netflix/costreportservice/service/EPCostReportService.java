@@ -12,6 +12,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 
 @Service
@@ -33,13 +35,13 @@ public class EPCostReportService {
 		validateProdName(prodName);
 		String epCode = getEPCodeFromEPReport(costs);
 		long timestamp = System.currentTimeMillis();
-		double totalCost=0.00d;
+		BigDecimal totalCost = new BigDecimal(0);
 
 		for(int i=0; i<costs.size(); i++){
-			totalCost += costs.get(i).getAmount();
-			epItemizedCostRepo.save(new EPItemizedCostEntity(prodName, epCode, costs.get(i).getAmount(), timestamp));
+			totalCost = totalCost.add(costs.get(i).getAmount());
+//			epItemizedCostRepo.save(new EPItemizedCostEntity(prodName, epCode, costs.get(i).getAmount(), timestamp));
 		}
-		epTotalCostRepo.save(new EPTotalCostEntity(prodName, epCode, totalCost, 0, totalCost, timestamp));
+		epTotalCostRepo.save(new EPTotalCostEntity(prodName, epCode, totalCost, null, totalCost, timestamp));
 		return Arrays.asList(new EPCostRecord(epCode, totalCost));
 	}
 
@@ -70,16 +72,16 @@ public class EPCostReportService {
 	{
 		validateProdName(prodName);
 		// store ep keys in order in the Map
-		Map<String, Double> prodCostMap = new TreeMap<>();
+		Map<String, BigDecimal> prodCostMap = new TreeMap<>();
 		// store each epCostRecord, calculate total cost for each EPCode
 		long timestamp = System.currentTimeMillis();
 		for(EPCostRecord cost : itemizedCosts){
 			String epCode = cost.getEpisodeCode();
-			double amount = cost.getAmount();
+			BigDecimal amount = cost.getAmount();
 			if(prodCostMap.get(epCode)==null){
 				prodCostMap.put(epCode, amount);
 			}else{
-				prodCostMap.put(epCode, prodCostMap.get(epCode)+amount);
+				prodCostMap.put(epCode, prodCostMap.get(epCode).add(amount));
 			}
 //			epItemizedCostRepo.save(new EPItemizedCostEntity(prodName, epCode, amount, timestamp));
 		}
@@ -87,7 +89,7 @@ public class EPCostReportService {
 		// store each EP total cost, return back EP total cost summary
 		List<EPCostRecord> totalCostRecords = new ArrayList<>();
 		for(String key : prodCostMap.keySet()){
-			epTotalCostRepo.save(new EPTotalCostEntity(prodName, key, prodCostMap.get(key), 0, prodCostMap.get(key), timestamp));
+			epTotalCostRepo.save(new EPTotalCostEntity(prodName, key, prodCostMap.get(key), null, prodCostMap.get(key), timestamp));
 			totalCostRecords.add(new EPCostRecord(key, prodCostMap.get(key)));
 		}
 		return totalCostRecords;
@@ -97,35 +99,35 @@ public class EPCostReportService {
 	{
 		validateProdName(prodName);
 		// store ep keys in order in the Map
-		Map<String, Double> prodCostMap = new TreeMap<>();
+		Map<String, BigDecimal> prodCostMap = new TreeMap<>();
 
 		// store each itemized cost into DB, and calculate total cost for each EPCode
 		long timestamp = System.currentTimeMillis();
 		for(EPCostRecord cost : itemizedCosts){
 			String epCode = cost.getEpisodeCode();
-			double amount = cost.getAmount();
+			BigDecimal amount = cost.getAmount();
 			if(prodCostMap.get(epCode)==null){
 				prodCostMap.put(epCode, amount);
 			}else{
-				prodCostMap.put(epCode, prodCostMap.get(epCode)+amount);
+				prodCostMap.put(epCode, prodCostMap.get(epCode).add(amount));
 			}
 //			epItemizedCostRepo.save(new EPItemizedCostEntity(prodName, epCode, amount, timestamp));
 		}
 
 		// calculate amortized cost
-		Double amoritzedCost = prodCostMap.get(AMORIZEDCODE);
-		double epAmortizedCost = 0;
+		BigDecimal amoritzedCost = prodCostMap.get(AMORIZEDCODE);
+		BigDecimal epAmortizedCost = new BigDecimal(0);
 		if(amoritzedCost!=null) {
 			int totalEps = prodCostMap.keySet().size()-1;
-			epAmortizedCost = amoritzedCost/totalEps;
+			epAmortizedCost = amoritzedCost.divide(new BigDecimal(totalEps), 2, RoundingMode.HALF_EVEN);;
 		}
 
 		// store each EP total cost including amortized cost, return back EP total cost summary
 		List<EPCostRecord> totalCostRecords = new ArrayList<>();
 		for(String key : prodCostMap.keySet()){
 			if(key.equalsIgnoreCase(AMORIZEDCODE)) continue;
-			epTotalCostRepo.save(new EPTotalCostEntity(prodName, key, prodCostMap.get(key), epAmortizedCost, prodCostMap.get(key)+epAmortizedCost, timestamp));
-			totalCostRecords.add(new EPCostRecord(key, prodCostMap.get(key)+epAmortizedCost));
+			epTotalCostRepo.save(new EPTotalCostEntity(prodName, key, prodCostMap.get(key), epAmortizedCost, prodCostMap.get(key).add(epAmortizedCost), timestamp));
+			totalCostRecords.add(new EPCostRecord(key, prodCostMap.get(key).add(epAmortizedCost)));
 		}
 		return totalCostRecords;
 	}

@@ -27,7 +27,6 @@ public class CostReportController {
 	public ResponseEntity<List<EPCostRecord>> postEPCostReport(@PathVariable("prodName") String prodName, @RequestBody List<EPCostRecord> costs){
 		try {
 			List<EPCostRecord> result = service.processEPCostReport(prodName, costs);
-
 			return ResponseEntity.ok(result);
 		}catch(InvalidReportException e){
 			LOGGER.error("POST /api/report/production/"+prodName+"/ep failed: " + e.getMessage());

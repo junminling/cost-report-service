@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.mockito.Mock;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -66,17 +67,19 @@ class EPCostReportServiceTest {
 		when(mockEPTotalCostRepo.findByProdNameAndEpCode("MaryAndMartin", "101"))
 				.thenReturn(getMMEPTotalCostEntities());
 		List<EPCostRecord> epCostResult = service.getCostReportByProdNameAndEpCode("MaryAndMartin", "101");
-		assertTrue(gson.toJson(epCostResult).equalsIgnoreCase(expectMMEPTotalCostReport()));
+		System.out.println(gson.toJson(epCostResult));
+		System.out.println(expectMMEPTotalCostReport());
+		assertTrue(gson.toJson(epCostResult).equalsIgnoreCase(expectGetMMEPTotalCostReport()));
 
 		when(mockEPTotalCostRepo.findByProdName("BurntBuscuits"))
 				.thenReturn(getBBTotalCostEntities());
 		List<EPCostRecord> prodCostResult = service.getCostReportByProdNameAndEpCode("BurntBuscuits", null);
-		assertTrue(gson.toJson(prodCostResult).equalsIgnoreCase(expectBBTotalCostReport()));
+		assertTrue(gson.toJson(prodCostResult).equalsIgnoreCase(expectGetBBTotalCostReport()));
 
 		when(mockEPTotalCostRepo.findByProdName("BurntBuscuitsAmortized"))
 				.thenReturn(getBBAmortizedTotalCostEntities());
 		List<EPCostRecord> amortizedCostResult = service.getCostReportByProdNameAndEpCode("BurntBuscuitsAmortized", null);
-		assertTrue(gson.toJson(amortizedCostResult).equalsIgnoreCase(expectBBAmortizedTotalCostReport()));
+		assertTrue(gson.toJson(amortizedCostResult).equalsIgnoreCase(expectGetBBAmortizedTotalCostReport()));
 	}
 
 	@Test()
@@ -140,43 +143,55 @@ class EPCostReportServiceTest {
 	}
 
 	private String expectMMEPTotalCostReport(){
-		return "[{\"episodeCode\":\"101\",\"amount\":2050.0}]";
+		return "[{\"episodeCode\":\"101\",\"amount\":2050.00}]";
 	}
 
 	private String expectBBTotalCostReport(){
-		return "[{\"episodeCode\":\"101\",\"amount\":500.0},{\"episodeCode\":\"102\",\"amount\":225.0},{\"episodeCode\":\"103\",\"amount\":1325.0},{\"episodeCode\":\"104\",\"amount\":613.0},{\"episodeCode\":\"105\",\"amount\":1254.0}]";
+		return "[{\"episodeCode\":\"101\",\"amount\":500.00},{\"episodeCode\":\"102\",\"amount\":225.00},{\"episodeCode\":\"103\",\"amount\":1325.00},{\"episodeCode\":\"104\",\"amount\":613.00},{\"episodeCode\":\"105\",\"amount\":1254.00}]";
 	}
 
 	private String expectBBAmortizedTotalCostReport(){
-		return "[{\"episodeCode\":\"101\",\"amount\":810.0},{\"episodeCode\":\"102\",\"amount\":535.0},{\"episodeCode\":\"103\",\"amount\":1635.0},{\"episodeCode\":\"104\",\"amount\":923.0},{\"episodeCode\":\"105\",\"amount\":1564.0}]";
+		return "[{\"episodeCode\":\"101\",\"amount\":810.00},{\"episodeCode\":\"102\",\"amount\":535.00},{\"episodeCode\":\"103\",\"amount\":1635.00},{\"episodeCode\":\"104\",\"amount\":923.00},{\"episodeCode\":\"105\",\"amount\":1564.00}]";
+	}
+
+	private String expectGetMMEPTotalCostReport(){
+		return "[{\"episodeCode\":\"101\",\"amount\":2050}]";
+	}
+
+	private String expectGetBBTotalCostReport(){
+		return "[{\"episodeCode\":\"101\",\"amount\":500},{\"episodeCode\":\"102\",\"amount\":225},{\"episodeCode\":\"103\",\"amount\":1325},{\"episodeCode\":\"104\",\"amount\":613},{\"episodeCode\":\"105\",\"amount\":1254}]";
+	}
+
+	private String expectGetBBAmortizedTotalCostReport(){
+		return "[{\"episodeCode\":\"101\",\"amount\":810},{\"episodeCode\":\"102\",\"amount\":535},{\"episodeCode\":\"103\",\"amount\":1635},{\"episodeCode\":\"104\",\"amount\":923},{\"episodeCode\":\"105\",\"amount\":1564}]";
 	}
 
 	private List<EPTotalCostEntity> getMMEPTotalCostEntities(){
 		long timestamp = System.currentTimeMillis();
 		return Arrays.asList(
-				new EPTotalCostEntity("MaryAndMartin", "101", 2050.00, 0, 2050.00, timestamp)
+				new EPTotalCostEntity("MaryAndMartin", "101", new BigDecimal(2050.00), null, new BigDecimal(2050.00), timestamp)
 		);
 	}
 
 	private List<EPTotalCostEntity> getBBTotalCostEntities(){
 		long timestamp = System.currentTimeMillis();
 		return Arrays.asList(
-				new EPTotalCostEntity("BurntBiscuits","101", 500.00, 0, 500.00, timestamp),
-				new EPTotalCostEntity("BurntBiscuits","102", 225.00, 0, 225.00, timestamp),
-				new EPTotalCostEntity("BurntBiscuits","103", 1325.00, 0, 1325.00, timestamp),
-				new EPTotalCostEntity("BurntBiscuits","104", 613.00, 0, 613.00, timestamp),
-				new EPTotalCostEntity("BurntBiscuits","105", 1254.00, 0, 1254.00, timestamp)
+				new EPTotalCostEntity("BurntBiscuits","101", new BigDecimal(500.00), null, new BigDecimal(500.00), timestamp),
+				new EPTotalCostEntity("BurntBiscuits","102", new BigDecimal(225.00), null, new BigDecimal(225.00), timestamp),
+				new EPTotalCostEntity("BurntBiscuits","103", new BigDecimal(1325.00), null, new BigDecimal(1325.00), timestamp),
+				new EPTotalCostEntity("BurntBiscuits","104", new BigDecimal(613.00), null, new BigDecimal(613.00), timestamp),
+				new EPTotalCostEntity("BurntBiscuits","105", new BigDecimal(1254.00), null, new BigDecimal(1254.00), timestamp)
 		);
 	}
 
 	private List<EPTotalCostEntity> getBBAmortizedTotalCostEntities(){
 		long timestamp = System.currentTimeMillis();
 		return Arrays.asList(
-				new EPTotalCostEntity("BurntBiscuitsII","101", 810.00, 0, 810.00, timestamp),
-				new EPTotalCostEntity("BurntBiscuitsII","102", 535.00, 0, 535.00, timestamp),
-				new EPTotalCostEntity("BurntBiscuitsII","103", 1635.00, 0, 1635.00, timestamp),
-				new EPTotalCostEntity("BurntBiscuitsII","104", 923.00, 0, 923.00, timestamp),
-				new EPTotalCostEntity("BurntBiscuitsII","105", 1564.00, 0, 1564.00, timestamp)
+				new EPTotalCostEntity("BurntBiscuitsII","101", new BigDecimal(810.00), null, new BigDecimal(810.00), timestamp),
+				new EPTotalCostEntity("BurntBiscuitsII","102", new BigDecimal(535.00), null, new BigDecimal(535.00), timestamp),
+				new EPTotalCostEntity("BurntBiscuitsII","103", new BigDecimal(1635.00), null, new BigDecimal(1635.00), timestamp),
+				new EPTotalCostEntity("BurntBiscuitsII","104", new BigDecimal(923.00), null, new BigDecimal(923.00), timestamp),
+				new EPTotalCostEntity("BurntBiscuitsII","105", new BigDecimal(1564.00), null, new BigDecimal(1564.00), timestamp)
 		);
 	}
 
