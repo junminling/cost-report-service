@@ -16,8 +16,8 @@ import java.util.*;
 
 @Service
 public class EPCostReportService {
-	EPTotalCostRepository epTotalCostRepo;
-	EPItemizedCostRepository epItemizedCostRepo;
+	private EPTotalCostRepository epTotalCostRepo;
+	private EPItemizedCostRepository epItemizedCostRepo;
 
 	public EPCostReportService(EPTotalCostRepository epTotalCostRepo, EPItemizedCostRepository epItemizedCostRepo){
 		this.epTotalCostRepo = epTotalCostRepo;
@@ -81,7 +81,7 @@ public class EPCostReportService {
 			}else{
 				prodCostMap.put(epCode, prodCostMap.get(epCode)+amount);
 			}
-			epItemizedCostRepo.save(new EPItemizedCostEntity(prodName, epCode, amount, timestamp));
+//			epItemizedCostRepo.save(new EPItemizedCostEntity(prodName, epCode, amount, timestamp));
 		}
 
 		// store each EP total cost, return back EP total cost summary
@@ -109,7 +109,7 @@ public class EPCostReportService {
 			}else{
 				prodCostMap.put(epCode, prodCostMap.get(epCode)+amount);
 			}
-			epItemizedCostRepo.save(new EPItemizedCostEntity(prodName, epCode, amount, timestamp));
+//			epItemizedCostRepo.save(new EPItemizedCostEntity(prodName, epCode, amount, timestamp));
 		}
 
 		// calculate amortized cost
@@ -150,16 +150,18 @@ public class EPCostReportService {
 		return epCode;
 	}
 
-	private InvalidReportException createInvalidReportException(ErrorEnum errorEnum, String message) {
-		InvalidReportException exception = new InvalidReportException(errorEnum.getId(), message);
-		LOGGER.error(ErrorEnum.EMPTY_REPORT.getName(), exception);
-		return exception;
-	}
-
 	private void validateProdName(String prodName) throws InvalidReportException {
 		if (prodName == null || prodName.isEmpty()) {
-			throw new InvalidReportException(
+			InvalidReportException exception = new InvalidReportException(
 					ErrorEnum.PRODUCTION_NAME_IS_EMPTY.getId(), "production name in request URL path cannot be empty");
+			LOGGER.error(ErrorEnum.PRODUCTION_NAME_IS_EMPTY.getName(), exception);
+			throw exception;
 		}
+	}
+
+	private InvalidReportException createInvalidReportException(ErrorEnum errorEnum, String message) {
+		InvalidReportException exception = new InvalidReportException(errorEnum.getId(), message);
+		LOGGER.error(errorEnum.getName(), exception);
+		return exception;
 	}
 }
