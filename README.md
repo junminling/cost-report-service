@@ -12,11 +12,11 @@ This is the core api to process itemized cost and generate and store consolidate
         mvn clean install
         java -jar target/cost-report-service-0.0.1-SNAPSHOT.jar 
  
-* Once application is started type the url in a browser:
+ * Once application is started type the url in a browser:
  
       http://localhost:8080/swagger-ui.html
       
-* NOTE* Make sure no other application is using port 8080.
+ * NOTE* Make sure no other application is using port 8080.
  
  ## Toolset:
   1) JDK 11.0.3
@@ -24,7 +24,7 @@ This is the core api to process itemized cost and generate and store consolidate
   4) spring-boot-starter-data-jpa v2.4.3 (Spring data JPA defaults to hibernate)
   5) springfox-swagger-ui/springfox-swagger2 v2.9.4
   
-  ### APIs
+ ## APIs
    * POST /api/report/production/{production}/ep (process single EP cost report)
    * GET api/report/production/{production}?epCode={epCode} (get aggregated cost report given production name and EP number)
    * POST /api/report/production/{production} (process production cost report)
@@ -34,10 +34,10 @@ This is the core api to process itemized cost and generate and store consolidate
 
 **NOTE:** I strongly recommend using swagger-ui to see the complete API documentation.
 
-## Error Scenarios and Exception Handling:
+ ## Error Scenarios and Exception Handling:
 
-Customized InvalidProductionException and InvalidReportException are created to log all application exceptions generated
-by the service during request handling.
+ Customized InvalidProductionException and InvalidReportException are created to log all application exceptions generated
+ by the service during request handling.
  Error scenarios includes:
   1) get aggregated cost report by invalid production name (404 status code)
   2) get cost report by invalid production/EP name combination (404 status code)
@@ -45,21 +45,14 @@ by the service during request handling.
   4) single EP Cost input payload contains more than one epCode (400 status code)
   5) production cost input payload is empty (400 status code)
 
+**NOTE:** I did not consider negative amount to be error case, considering we may have some refund transactions.
 
-# Database:
+
+ ## Database:
 
 Java In-memory h2 database is used. During start up table create scripts are run and sample data set inserted.
 
-## Logging:
-
-slf4j is used for logging. 
-
-
-## Documentation:
-
- swagger-ui
- 
-## DataModel:
+ ### DataModel:
  
  The datamodel has 1 table:
   1) EpTotalCostEntity (store aggregated cost on production EP level)
@@ -81,18 +74,26 @@ slf4j is used for logging.
   	double itemizedCost;
   	long timestamp;
 
-## System Design:
-
- Maintained a simple design with Controller, service and repository pattern. (CostReportController and EPCostReportService).
- 
-## Performance consideration:
+### Performance consideration:
 
 1. In-memory database, in-memory processing for a single report. Fast for current needs
 2. If in future we want to store each itemized cost from input data, we should take performance into consideration, like async DB persist, or bulkSave + multi-thread processing to save all itemized cost.
 3. when data gets really big, we could consider to hash based on production  name and EP code to shard the DB into multiple partitions.
 4. we could also consider caching some results for cost retrieval if needed.
+## Logging:
+
+1. lf4j is used for logging.
+2. log level is configured in application.yml file
+
+## Documentation:
+
+ swagger-ui: After service starts, go to http://localhost:8080/swagger-ui.html for complete API documenations.  
  
 
+## System Design:
+
+ Maintained a simple design with Controller, service and repository pattern. (CostReportController and EPCostReportService).
+ 
 
 
 ## Maintainability:

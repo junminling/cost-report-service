@@ -1,5 +1,6 @@
 package junmin.netflix.costreportservice.controller;
 
+import io.swagger.annotations.ApiOperation;
 import junmin.netflix.costreportservice.exception.InvalidProductionException;
 import junmin.netflix.costreportservice.exception.InvalidReportException;
 import junmin.netflix.costreportservice.pojo.EPCostRecord;
@@ -23,6 +24,7 @@ public class CostReportController {
 		this.service = service;
 	}
 
+	@ApiOperation(value="process single EP cost report", notes="process single EP cost report")
 	@PostMapping(path="/report/production/{prodName}/ep",consumes = "application/json", produces = "application/json")
 	public ResponseEntity<List<EPCostRecord>> postEPCostReport(@PathVariable("prodName") String prodName, @RequestBody List<EPCostRecord> costs){
 		try {
@@ -35,6 +37,7 @@ public class CostReportController {
 		}
 	}
 
+	@ApiOperation(value="get aggregated cost report given production name, filtered by EP number", notes="get aggregated cost report given production name and EP number")
 	@GetMapping(path="/report/production/{prodName}",consumes = "application/json", produces = "application/json")
 	public ResponseEntity<List<EPCostRecord>> getProdCostReport(@PathVariable("prodName") String prodName, @RequestParam(name="epCode",required = false) String epCode){
 		try {
@@ -47,6 +50,7 @@ public class CostReportController {
 		}
 	}
 
+	@ApiOperation(value="process complete production cost report", notes="process complete production cost report")
 	@PostMapping(path="/report/production/{prodName}",consumes = "application/json", produces = "application/json")
 	public ResponseEntity<List<EPCostRecord>> postProdCostReport(@PathVariable("prodName") String prodName, @RequestBody List<EPCostRecord> costs){
 		try {
@@ -59,6 +63,7 @@ public class CostReportController {
 		}
 	}
 
+	@ApiOperation(value="process complete production cost report with amortized costs", notes="process complete production cost report with amortized costs")
 	@PostMapping(path="/report/production/{prodName}/amortized",consumes = "application/json", produces = "application/json")
 	public ResponseEntity<List<EPCostRecord>> postAmortizedProdCostReport(@PathVariable("prodName") String prodName, @RequestBody List<EPCostRecord> costs){
 		try {

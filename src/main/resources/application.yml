@@ -1,5 +1,4 @@
 logging:
   level:
     root: info
-    com.netflix.junminhomeproj: trace
 
