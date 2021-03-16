@@ -38,7 +38,7 @@ public class CostReportController {
 	}
 
 	@ApiOperation(value="get aggregated cost report given production name, filtered by EP number", notes="get aggregated cost report given production name and EP number")
-	@GetMapping(path="/report/production/{prodName}",consumes = "application/json", produces = "application/json")
+	@GetMapping(path="/report/production/{prodName}", produces = "application/json")
 	public ResponseEntity<List<EPCostRecord>> getProdCostReport(@PathVariable("prodName") String prodName, @RequestParam(name="epCode",required = false) String epCode){
 		try {
 			List<EPCostRecord> result = service.getCostReportByProdNameAndEpCode(prodName, epCode);
